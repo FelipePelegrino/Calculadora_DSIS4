@@ -1,4 +1,5 @@
 import javax.swing.JTextArea;
+import java.awt.Font;
 
 public class Visor extends JTextArea {
     
@@ -6,14 +7,18 @@ public class Visor extends JTextArea {
         super();
         setEditable(false);
         setOpaque(false);
+        setFont(new Font("arial",Font.PLAIN,18));
     }
 
-    public void limparCampos() {
+    public void limparVisor() {
         setText(null);
     }
 
     public void escreverVisor(String string) {
-        setText(string);
+        if(getText().matches("^[0-9,.]+$")) {
+            setText(getText() + string);
+        }
+        else
+            setText(string);
     }
-
 }

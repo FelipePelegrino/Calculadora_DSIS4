@@ -5,14 +5,14 @@ import javax.swing.border.Border;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import java.awt.Container;
+import java.awt.event.*;
 import java.awt.Font;
 import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 
-
-public class Calculadora extends JFrame {
+public class Calculadora extends JFrame implements ActionListener {
     
     private GridBagLayout layoutGridBagLayout;
     private GridBagConstraints constraintsGridBagConstraints;
@@ -36,6 +36,9 @@ public class Calculadora extends JFrame {
     private JButton teclaMultiplicacao;
     private JButton teclaDivisao;
     private JButton teclaLimpar;
+    private double auxiliarNumeroOperacao;
+    private String auxiliarOperacao;
+    private boolean realizaOperacao;
 
     public Calculadora() {
         super("Calculadora");
@@ -56,7 +59,7 @@ public class Calculadora extends JFrame {
         panelVisor.setBorder(borda);
         panelTeclas.setBorder(borda);
         setLayout(layoutGridBagLayout);
-        definirFonte(teclaZero, teclaUm, teclaDois, teclaTres, teclaQuatro, teclaCinco, teclaSeis, teclaSete, teclaOito, teclaNove, teclaPonto, teclaIgual, teclaSoma, teclaSubtracao, teclaMultiplicacao, teclaDivisao, teclaLimpar);
+        configurarBotao(teclaZero, teclaUm, teclaDois, teclaTres, teclaQuatro, teclaCinco, teclaSeis, teclaSete, teclaOito, teclaNove, teclaPonto, teclaIgual, teclaSoma, teclaSubtracao, teclaMultiplicacao, teclaDivisao, teclaLimpar);
         ajustarLayout(panelTeclas, teclaLimpar, 0, 0, GridBagConstraints.CENTER, 1, 1, GridBagConstraints.BOTH, 1, 1);
         ajustarLayout(panelTeclas, teclaDivisao, 1, 0, GridBagConstraints.CENTER, 1, 1, GridBagConstraints.BOTH, 1, 1);
         ajustarLayout(panelTeclas, teclaMultiplicacao, 2, 0, GridBagConstraints.CENTER, 1, 1, GridBagConstraints.BOTH, 1, 1);
@@ -117,10 +120,116 @@ public class Calculadora extends JFrame {
         panelVisor = new JPanel(layoutGridBagLayout);
         panelTeclas = new JPanel(layoutGridBagLayout);
     }
-
-    private void definirFonte(JComponent... components) {
+    
+    private void configurarBotao(JComponent... components) {
         for(JComponent component : components) {    
-            component.setFont(new Font("arial",Font.PLAIN,18));
+            adicionarListener((JButton)component);
+            definirFonte(component);
+        }
+    }
+
+    private void definirFonte(JComponent component) {   
+        component.setFont(new Font("arial",Font.PLAIN,18));
+    }
+
+    private void adicionarListener(JButton button) {
+        button.addActionListener(this);
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        if(e.getSource() == teclaZero) {
+            visor.escreverVisor("0");
+        }
+        else if(e.getSource() == teclaUm) {
+            visor.escreverVisor("1");
+        }
+        else if(e.getSource() == teclaDois) {
+            visor.escreverVisor("2");
+        }
+        else if(e.getSource() == teclaTres) {
+            visor.escreverVisor("3");
+        }
+        else if(e.getSource() == teclaQuatro) {
+            visor.escreverVisor("4");
+        }
+        else if(e.getSource() == teclaCinco) {
+            visor.escreverVisor("5");
+        }
+        else if(e.getSource() == teclaSeis) {
+            visor.escreverVisor("6");
+        }
+        else if(e.getSource() == teclaSete) {
+            visor.escreverVisor("7");
+        }
+        else if(e.getSource() == teclaOito) {
+            visor.escreverVisor("8");
+        }
+        else if(e.getSource() == teclaNove) {
+            visor.escreverVisor("9");
+        }
+        else if(e.getSource() == teclaPonto) {
+            visor.escreverVisor(".");
+        }
+        else if(e.getSource() == teclaLimpar) {
+            visor.limparVisor();
+            realizaOperacao = false;
+        }
+        else if(e.getSource() == teclaSoma) {
+            acaoTeclaOperacao("+");
+        }
+        else if(e.getSource() == teclaSubtracao) {
+            acaoTeclaOperacao("-");
+        }
+        else if(e.getSource() == teclaMultiplicacao) {
+            acaoTeclaOperacao("*");
+        }
+        else if(e.getSource() == teclaDivisao) {
+            acaoTeclaOperacao("/");
+        }
+        else if(e.getSource() == teclaIgual) {
+            acaoTeclaIgual();
+        }
+    }
+
+    private boolean isOperacaoValida(String textoVisor) {
+        return textoVisor.matches("^[0-9.]+$");
+    }
+
+    private void acaoTeclaOperacao(String operacao) {
+        if(isOperacaoValida(visor.getText())) {
+            auxiliarNumeroOperacao = Double.parseDouble(visor.getText());
+            auxiliarOperacao = operacao;
+            realizaOperacao = true;
+            visor.limparVisor();
+        }
+    }
+
+    private void acaoTeclaIgual() {
+        double resultado = 0;
+        if(realizaOperacao && isOperacaoValida(visor.getText()) && auxiliarOperacao.matches("^[+-/*]+$")) {
+            switch (auxiliarOperacao) {
+                case "+":
+                    resultado = Operacao.soma(auxiliarNumeroOperacao, Double.parseDouble(visor.getText()));
+                    visor.limparVisor();
+                    break;
+                case "-":
+                    resultado = Operacao.subtracao(auxiliarNumeroOperacao, Double.parseDouble(visor.getText()));
+                    visor.limparVisor();
+                    break;
+                case "*":
+                    resultado = Operacao.multiplicacao(auxiliarNumeroOperacao, Double.parseDouble(visor.getText()));
+                    visor.limparVisor();
+                    break;
+                case "/":
+                    resultado = Operacao.divisao(auxiliarNumeroOperacao, Double.parseDouble(visor.getText()));
+                    visor.limparVisor();
+                    break;
+            }
+            if(auxiliarOperacao.equals("/") && resultado == 0)
+                visor.escreverVisor("Impossivel dividir por 0.");
+            else
+                visor.escreverVisor(String.valueOf(resultado));
         }
     }
 }
